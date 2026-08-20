@@ -4,7 +4,7 @@ Local CLI for generating CVs as PDF from Markdown. Aimed at developers on macOS 
 
 ## Status
 
-The Python environment and PDF stack are set up. The application itself is still a stub (`uv run cv-generator` prints a hello message).
+The `generate-pdf` command is available: it converts a Markdown file to a PDF with Jinja2 and WeasyPrint.
 
 ## Requirements
 
@@ -31,11 +31,13 @@ uv sync
 
 ## Usage
 
+`--input` and `--output` are required. An existing PDF at `--output` is overwritten. Success prints nothing.
+
 ```bash
-uv run cv-generator
-# or
-uv run python
-source .venv/bin/activate
+uv run cv-generator generate-pdf --input cv.md --output cv.pdf
+uv run cv-generator generate-pdf -i cv.md -o cv.pdf
+uv run cv-generator --help
+uv run cv-generator generate-pdf --help
 ```
 
 ## Stack
