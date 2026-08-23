@@ -49,4 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     except CvGeneratorError as exc:
         print(exc, file=sys.stderr)
         return 1
+    except OSError as exc:
+        print(exc, file=sys.stderr)
+        return 1
     return 0

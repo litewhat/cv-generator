@@ -90,6 +90,51 @@ def test_cv_generator_error_returns_1(tmp_path: Path, capsys, monkeypatch):
     assert "cairo missing" in err
 
 
+def test_os_error_returns_1(tmp_path: Path, capsys, monkeypatch):
+    source = tmp_path / "cv.md"
+    source.write_text("# Hi\n", encoding="utf-8")
+
+    def boom(input_path: Path, output_path: Path) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr("cv_generator.cli.generate_pdf", boom)
+    code = main(["generate-pdf", "-i", str(source), "-o", str(tmp_path / "out.pdf")])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "disk full" in err
+
+
+def test_os_error_from_replace_returns_1(tmp_path: Path, capsys, monkeypatch):
+    # Mirrors generate_pdf's real OSError path: os.replace failure propagates as OSError
+    # but CLI must map it to exit 1, not traceback.
+    source = tmp_path / "cv.md"
+    source.write_text("# Hi\n", encoding="utf-8")
+
+    def boom_replace(input_path: Path, output_path: Path) -> None:
+        raise OSError("boom")
+
+    monkeypatch.setattr("cv_generator.cli.generate_pdf", boom_replace)
+    code = main(["generate-pdf", "-i", str(source), "-o", str(tmp_path / "out.pdf")])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "boom" in err
+
+
+def test_permission_error_returns_1(tmp_path: Path, capsys, monkeypatch):
+    # PermissionError is a subclass of OSError; ensure it is also mapped.
+    source = tmp_path / "cv.md"
+    source.write_text("# Hi\n", encoding="utf-8")
+
+    def boom_perm(input_path: Path, output_path: Path) -> None:
+        raise PermissionError("permission denied")
+
+    monkeypatch.setattr("cv_generator.cli.generate_pdf", boom_perm)
+    code = main(["generate-pdf", "-i", str(source), "-o", str(tmp_path / "out.pdf")])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "permission denied" in err
+
+
 def test_importing_cli_does_not_import_weasyprint():
     result = subprocess.run(
         [
