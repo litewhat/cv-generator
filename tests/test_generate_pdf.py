@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from cv_generator.generate_pdf import CvGeneratorError, generate_pdf
+from cv_generator.html_document import html_document
 
 _FENCE = chr(96) * 3
 _MD = (
@@ -118,6 +119,86 @@ def test_replace_failure_deletes_temp_and_keeps_old_output(
     assert output.read_bytes() == original
     leftovers = list(tmp_path.glob(".cv-generator-*.pdf"))
     assert leftovers == []
+
+
+_FRONTMATTER_MD = (
+    "---\n"
+    "name: Ada Lovelace\n"
+    "title: Software Engineer\n"
+    "email: ada@example.com\n"
+    "links:\n"
+    "  github: https://github.com/ada\n"
+    "---\n"
+    "# Summary\n\n"
+    "Profile line.\n"
+)
+
+
+def test_generate_pdf_with_frontmatter_writes_valid_pdf(tmp_path: Path):
+    source = tmp_path / "cv.md"
+    source.write_text(_FRONTMATTER_MD, encoding="utf-8")
+    output = tmp_path / "cv.pdf"
+    generate_pdf(source, output)
+    assert output.read_bytes().startswith(b"%PDF")
+    assert output.stat().st_size > 0
+
+
+def test_generate_pdf_passes_meta_and_stem_title(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    captured: dict = {}
+    real_html_document = html_document
+
+    def fake_html_document(content: str, title: str, meta: dict | None = None) -> str:
+        captured["content"] = content
+        captured["title"] = title
+        captured["meta"] = meta
+        captured["html"] = real_html_document(content, title, meta=meta)
+        return captured["html"]
+
+    monkeypatch.setattr("cv_generator.generate_pdf.html_document", fake_html_document)
+    source = tmp_path / "cv.md"
+    source.write_text(_FRONTMATTER_MD, encoding="utf-8")
+    generate_pdf(source, tmp_path / "cv.pdf")
+    assert captured["title"] == "cv"
+    assert captured["meta"]["name"] == "Ada Lovelace"
+    assert captured["meta"]["title"] == "Software Engineer"
+    assert "---" not in captured["content"]
+    assert "<h1>Ada Lovelace</h1>" in captured["html"]
+    assert "<title>cv</title>" in captured["html"]
+
+
+def test_generate_pdf_without_frontmatter_still_writes_pdf(tmp_path: Path):
+    source = tmp_path / "plain.md"
+    source.write_text("# Summary\n\nHello\n", encoding="utf-8")
+    output = tmp_path / "plain.pdf"
+    generate_pdf(source, output)
+    assert output.read_bytes().startswith(b"%PDF")
+
+
+def test_generate_pdf_unclosed_frontmatter_raises_and_writes_no_output(
+    tmp_path: Path,
+):
+    source = tmp_path / "cv.md"
+    source.write_text("---\nname: Ada\n# Summary\n", encoding="utf-8")
+    output = tmp_path / "out.pdf"
+    with pytest.raises(CvGeneratorError, match="Unclosed YAML frontmatter"):
+        generate_pdf(source, output)
+    assert not output.exists()
+
+
+def test_generate_pdf_invalid_yaml_raises_and_keeps_old_output(
+    tmp_path: Path,
+):
+    source = tmp_path / "cv.md"
+    source.write_text("# First\n", encoding="utf-8")
+    output = tmp_path / "out.pdf"
+    generate_pdf(source, output)
+    original = output.read_bytes()
+    source.write_text("---\nname: [unclosed\n---\n# Summary\n", encoding="utf-8")
+    with pytest.raises(CvGeneratorError, match="Invalid YAML frontmatter"):
+        generate_pdf(source, output)
+    assert output.read_bytes() == original
 
 
 @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")

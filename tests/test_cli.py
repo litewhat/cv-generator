@@ -146,3 +146,16 @@ def test_importing_cli_does_not_import_weasyprint():
         check=False,
     )
     assert result.returncode == 0
+
+
+def test_importing_cli_does_not_import_yaml():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import cv_generator.cli, sys; "
+            "raise SystemExit(0 if 'yaml' not in sys.modules else 1)",
+        ],
+        check=False,
+    )
+    assert result.returncode == 0
