@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    /* elegant-v1 — ATS-safe single-column CV. Variables: title, content, meta. */
+    :root {
+      --ink: #1f2933;
+      --body: #2c333a;
+      --muted: #5c6770;
+      --rule: #c5cdd4;
+      --accent: #2f5d62;
+      --paper: #ffffff;
+    }
+
+    @page {
+      size: A4;
+      margin: 1.8cm 1.8cm 2.0cm 1.8cm;
+      @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 7.5pt;
+        color: #5c6770;
+      }
+    }
+
+    * { orphans: 3; widows: 3; }
+
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9.25pt;
+      line-height: 1.5;
+      color: var(--body);
+      background: var(--paper);
+      margin: 0;
+      padding: 0;
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "clig" 0;
+      hyphens: none;
+    }
+
+    /* Header from optional meta (name, title, contacts, links). */
+    .cv-header {
+      text-align: left;
+      border-bottom: 0.75pt solid var(--rule);
+      padding-bottom: 0.85em;
+      margin-bottom: 1.25em;
+    }
+    .cv-header h1 {
+      font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-size: 22pt;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      margin: 0 0 0.12em;
+      line-height: 1.15;
+    }
+    .cv-header .cv-title {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .cv-header .cv-contacts,
+    .cv-header .cv-links {
+      font-size: 8.5pt;
+      color: var(--muted);
+      margin: 0.4em 0 0;
+      line-height: 1.45;
+    }
+    .cv-header .cv-sep {
+      color: var(--rule);
+      margin: 0 0.4em;
+    }
+    .cv-header a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 0.4pt solid var(--rule);
+    }
+
+    /* Body: Markdown fragment. h1 = section, h2 = company, h3 = project. */
+    .cv-body > h1:first-child { margin-top: 0; }
+
+    .cv-body h1 {
+      font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      font-size: 13pt;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      line-height: 1.25;
+      border-left: 2.5pt solid var(--accent);
+      padding-left: 0.55em;
+      margin: 1.35em 0 0.5em;
+      page-break-after: avoid;
+    }
+
+    .cv-body h2 {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 1.15em 0 0.15em;
+      line-height: 1.3;
+      page-break-after: avoid;
+    }
+
+    .cv-body h3 {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      font-weight: 600;
+      color: var(--body);
+      margin: 0.85em 0 0.15em;
+      line-height: 1.35;
+      page-break-after: avoid;
+    }
+
+    .cv-body h2 + p,
+    .cv-body h3 + p,
+    .cv-body h3 + ul { page-break-before: avoid; }
+
+    .cv-body p {
+      margin: 0.35em 0;
+      line-height: 1.5;
+    }
+
+    .cv-body strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .cv-body p strong:first-child { color: var(--accent); }
+
+    .cv-body ul,
+    .cv-body ol {
+      margin: 0.25em 0 0.65em;
+      padding-left: 1.2em;
+    }
+    .cv-body li {
+      margin: 0.18em 0;
+      line-height: 1.5;
+      page-break-inside: avoid;
+    }
+    .cv-body li::marker { color: var(--accent); }
+
+    .cv-body a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 0.4pt solid var(--rule);
+      word-break: break-word;
+    }
+
+    .cv-body hr {
+      border: none;
+      border-top: 0.75pt solid var(--rule);
+      margin: 1.1em 0;
+    }
+
+    .cv-body table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0.7em 0;
+      font-size: 8.7pt;
+    }
+    .cv-body th,
+    .cv-body td {
+      border: 0.6pt solid var(--rule);
+      padding: 0.35em 0.55em;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .cv-body code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+    }
+    .cv-body pre {
+      background: #f7f8f8;
+      border: 0.6pt solid var(--rule);
+      padding: 0.7em 0.8em;
+      overflow-x: auto;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  {% if meta and (meta.name or meta.title or meta.email or meta.phone or meta.location or meta.links) %}
+  <header class="cv-header">
+    {% if meta.name %}<h1>{{ meta.name }}</h1>{% endif %}
+    {% if meta.title %}<p class="cv-title">{{ meta.title }}</p>{% endif %}
+    {% if meta.email or meta.phone or meta.location %}
+    <p class="cv-contacts">
+      {% for item in [meta.email, meta.phone, meta.location] if item %}
+        {% if not loop.first %}<span class="cv-sep">·</span>{% endif %}
+        {% if loop.first and meta.email and item == meta.email %}
+          <a href="mailto:{{ item }}">{{ item }}</a>
+        {% else %}
+          <span>{{ item }}</span>
+        {% endif %}
+      {% endfor %}
+    </p>
+    {% endif %}
+    {% if meta.links %}
+    <p class="cv-links">
+      {% for label, url in meta.links.items() %}
+        {% if not loop.first %}<span class="cv-sep">·</span>{% endif %}
+        <a href="{{ url }}">{{ label }}</a>
+      {% endfor %}
+    </p>
+    {% endif %}
+  </header>
+  {% endif %}
+  <main class="cv-body">
+    {{ content }}
+  </main>
+</body>
+</html>

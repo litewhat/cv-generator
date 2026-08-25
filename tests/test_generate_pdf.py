@@ -1,3 +1,5 @@
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -116,3 +118,24 @@ def test_replace_failure_deletes_temp_and_keeps_old_output(
     assert output.read_bytes() == original
     leftovers = list(tmp_path.glob(".cv-generator-*.pdf"))
     assert leftovers == []
+
+
+@pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
+def test_pdf_text_is_linear_top_to_bottom(tmp_path: Path):
+    source = tmp_path / "cv.md"
+    source.write_text(
+        "# Summary\n\nProfile line.\n\n# Experience\n\n## Flexiana\n\n- Built a service\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "cv.pdf"
+    generate_pdf(source, output)
+    assert output.read_bytes().startswith(b"%PDF")
+    text = subprocess.check_output(
+        ["pdftotext", "-layout", str(output), "-"],
+        text=True,
+    )
+    i_summary = text.index("Summary")
+    i_exp = text.index("Experience")
+    i_flex = text.index("Flexiana")
+    i_built = text.index("Built a service")
+    assert i_summary < i_exp < i_flex < i_built

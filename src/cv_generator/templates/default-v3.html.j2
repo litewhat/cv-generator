@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      --accent: #14365f;
+      --accent-2: #1a5da0;
+      --accent-light: #eef2f7;
+      --accent-light-2: #f7f9fc;
+      --text: #1e2328;
+      --muted: #5b6675;
+      --faint: #8a95a5;
+      --border: #d9e1ec;
+      --border-strong: #b9c6d9;
+    }
+
+    @page {
+      size: A4;
+      margin: 1.7cm 1.85cm 1.9cm 1.85cm;
+      @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 7pt;
+        color: #8a95a5;
+        letter-spacing: 0.04em;
+      }
+    }
+
+    * { orphans: 3; widows: 3; }
+
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 9.2pt;
+      line-height: 1.55;
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header (frontmatter meta) ── */
+    .cv-header {
+      text-align: center;
+      border-bottom: 2.4pt solid var(--accent);
+      padding-bottom: 0.85em;
+      margin-bottom: 1.35em;
+    }
+    .cv-header h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      margin: 0 0 0.1em;
+      line-height: 1.05;
+    }
+    .cv-header .cv-title {
+      font-size: 10.2pt;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0.15em 0 0;
+      line-height: 1.3;
+    }
+    .cv-header .cv-contacts,
+    .cv-header .cv-links {
+      font-size: 8.4pt;
+      color: var(--muted);
+      margin: 0.4em 0 0;
+      line-height: 1.45;
+    }
+    .cv-header .cv-contacts span,
+    .cv-header .cv-links span { white-space: nowrap; }
+    .cv-header .cv-links a {
+      color: var(--accent-2);
+      text-decoration: none;
+      border-bottom: 0.5pt solid #c2d3e8;
+      padding-bottom: 0.5pt;
+    }
+    .cv-header .cv-sep {
+      color: var(--border-strong);
+      margin: 0 0.45em;
+      font-weight: 300;
+    }
+
+    /* ── Body typography ── */
+    .cv-body h1 {
+      font-size: 20pt;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      margin: 0.15em 0 0.25em;
+      line-height: 1.1;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .cv-body h1 + p { margin-top: 0.2em; }
+
+    .cv-body h2 {
+      font-size: 10.2pt;
+      font-weight: 750;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border-bottom: 1.4pt solid var(--border);
+      padding-bottom: 0.28em;
+      margin: 1.55em 0 0.55em;
+      line-height: 1.25;
+      page-break-after: avoid;
+    }
+    .cv-body h2:first-child { margin-top: 0.4em; }
+
+    .cv-body h3 {
+      font-size: 10pt;
+      font-weight: 680;
+      color: #162e4e;
+      margin: 1.05em 0 0.22em;
+      line-height: 1.3;
+      page-break-after: avoid;
+    }
+    .cv-body h3 + p { margin-top: 0.2em; }
+
+    .cv-body h4 {
+      font-size: 9.4pt;
+      font-weight: 650;
+      color: #1e3a5e;
+      margin: 0.9em 0 0.2em;
+      line-height: 1.35;
+      page-break-after: avoid;
+    }
+
+    .cv-body h5, .cv-body h6 {
+      font-size: 9pt;
+      font-weight: 650;
+      color: var(--muted);
+      margin: 0.8em 0 0.2em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cv-body p {
+      margin: 0.42em 0;
+      line-height: 1.55;
+    }
+
+    /* Summary opening paragraph — slightly larger, muted if first after Summary */
+    .cv-body h2 + p {
+      /* keep regular but ensure breathing room */
+    }
+
+    .cv-body strong { font-weight: 650; color: #111418; }
+    .cv-body em { color: var(--muted); font-style: italic; }
+
+    /* ── Tech-stack / meta lines ── */
+    /* Paragraph that starts with bold label like **Tech stack:** or **Stack:** */
+    .cv-body p strong:first-child { color: var(--accent); }
+
+    /* ── Lists ── */
+    .cv-body ul, .cv-body ol {
+      margin: 0.35em 0 0.7em;
+      padding-left: 1.25em;
+    }
+    .cv-body li {
+      margin: 0.22em 0;
+      line-height: 1.5;
+      padding-left: 0.1em;
+    }
+    .cv-body li::marker { color: var(--accent-2); }
+    .cv-body ul ul, .cv-body ol ol, .cv-body ul ol, .cv-body ol ul {
+      margin: 0.2em 0 0.25em;
+    }
+    .cv-body li > p { margin: 0.15em 0; }
+
+    /* ── Links ── */
+    .cv-body a {
+      color: var(--accent-2);
+      text-decoration: none;
+      border-bottom: 0.5pt solid #c2d3e8;
+      padding-bottom: 0.4pt;
+      word-break: break-word;
+    }
+
+    /* ── Horizontal rule ── */
+    .cv-body hr {
+      border: none;
+      border-top: 1pt solid var(--border);
+      margin: 1.15em 0;
+    }
+
+    /* ── Blockquote (summary highlight) ── */
+    .cv-body blockquote {
+      margin: 0.6em 0 0.9em;
+      padding: 0.55em 0.9em;
+      border-left: 3pt solid var(--accent);
+      background: var(--accent-light-2);
+      color: #2a3441;
+      font-size: 9.15pt;
+      line-height: 1.55;
+    }
+    .cv-body blockquote p { margin: 0.3em 0; }
+    .cv-body blockquote p:first-child { margin-top: 0; }
+    .cv-body blockquote p:last-child { margin-bottom: 0; }
+
+    /* ── Tables ── */
+    .cv-body table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0.7em 0 0.9em;
+      font-size: 8.7pt;
+      line-height: 1.45;
+    }
+    .cv-body th {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 7.9pt;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      border: 0.7pt solid var(--border);
+      padding: 0.42em 0.6em;
+    }
+    .cv-body td {
+      border: 0.7pt solid var(--border);
+      padding: 0.38em 0.6em;
+      text-align: left;
+      vertical-align: top;
+    }
+    .cv-body tr:nth-child(even) td { background: #fbfcfe; }
+
+    /* ── Code ── */
+    .cv-body code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: var(--accent-light-2);
+      border: 0.5pt solid #e3e8f0;
+      border-radius: 2pt;
+      padding: 0.08em 0.28em;
+      color: #1a2b45;
+    }
+    .cv-body pre {
+      background: var(--accent-light-2);
+      border: 0.7pt solid var(--border);
+      border-radius: 3pt;
+      padding: 0.75em 0.85em;
+      overflow-x: auto;
+      margin: 0.7em 0;
+      line-height: 1.45;
+    }
+    .cv-body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.84em;
+    }
+
+    /* ── Avoid breaks inside experience entries ── */
+    .cv-body h3, .cv-body h4 { page-break-after: avoid; }
+    .cv-body ul, .cv-body ol { page-break-inside: auto; }
+    .cv-body li { page-break-inside: avoid; }
+
+    /* ── Print tweaks ── */
+    @media print {
+      a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  {% if meta and (meta.name or meta.title or meta.email or meta.phone or meta.location or meta.links) %}
+  <header class="cv-header">
+    {% if meta.name %}<h1>{{ meta.name }}</h1>{% endif %}
+    {% if meta.title %}<p class="cv-title">{{ meta.title }}</p>{% endif %}
+    {% if meta.email or meta.phone or meta.location %}
+    <p class="cv-contacts">
+      {% set parts = [] %}
+      {% if meta.email %}{% set _ = parts.append('<span>' ~ meta.email|e ~ '</span>') %}{% endif %}
+      {% if meta.phone %}{% set _ = parts.append('<span>' ~ meta.phone|e ~ '</span>') %}{% endif %}
+      {% if meta.location %}{% set _ = parts.append('<span>' ~ meta.location|e ~ '</span>') %}{% endif %}
+      {{ parts | join('<span class="cv-sep">|</span>') | safe }}
+    </p>
+    {% endif %}
+    {% if meta.links %}
+    <p class="cv-links">
+      {% set link_parts = [] %}
+      {% for label, url in meta.links.items() %}
+        {% set _ = link_parts.append('<span><a href="' ~ url|e ~ '">' ~ label|e ~ '</a></span>') %}
+      {% endfor %}
+      {{ link_parts | join('<span class="cv-sep">|</span>') | safe }}
+    </p>
+    {% endif %}
+  </header>
+  {% endif %}
+  <main class="cv-body">
+    {{ content }}
+  </main>
+</body>
+</html>
