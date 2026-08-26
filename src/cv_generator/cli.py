@@ -4,11 +4,7 @@ from pathlib import Path
 
 from cv_generator.generate_pdf import CvGeneratorError, generate_pdf
 
-
-def main(argv: list[str] | None = None) -> int:
-    if argv is None:
-        argv = sys.argv[1:]
-
+def create_parser():
     parser = argparse.ArgumentParser(prog="cv-generator")
     subparsers = parser.add_subparsers(dest="command", required=True)
     pdf_parser = subparsers.add_parser(
@@ -29,6 +25,15 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="PDF file to write",
     )
+    return parser
+    
+
+def main(argv: list[str] | None = None) -> int:
+    # TODO: argv should always be provided by callers of this function
+    if argv is None:
+        argv = sys.argv[1:]
+
+    parser = create_parser()
 
     try:
         args = parser.parse_args(argv)

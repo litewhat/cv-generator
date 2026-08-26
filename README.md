@@ -40,10 +40,21 @@ uv run cv-generator --help
 uv run cv-generator generate-pdf --help
 ```
 
+## Testing
+
+Requires dev dependencies (installed by default with `uv sync`):
+
+```bash
+uv sync
+uv run pytest
+uv run pytest -v               # verbose
+uv run pytest tests/test_cli.py -v  # single file
+```
+
 ## Stack
 
-| Package | Role |
-| --- | --- |
-| [Jinja2](https://jinja.palletsprojects.com/) | HTML templates |
+| Package                                               | Role            |
+| ----------------------------------------------------- | --------------- |
+| [Jinja2](https://jinja.palletsprojects.com/)          | HTML templates  |
 | [Python-Markdown](https://python-markdown.github.io/) | Markdown → HTML |
-| [WeasyPrint](https://weasyprint.org/) | HTML → PDF |
+| [WeasyPrint](https://weasyprint.org/)                 | HTML → PDF      |
