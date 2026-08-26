@@ -28,11 +28,7 @@ def create_parser():
     return parser
     
 
-def main(argv: list[str] | None = None) -> int:
-    # TODO: argv should always be provided by callers of this function
-    if argv is None:
-        argv = sys.argv[1:]
-
+def main(argv: list[str]) -> int:
     parser = create_parser()
 
     try:
