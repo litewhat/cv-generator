@@ -28,7 +28,7 @@ def create_parser():
     return parser
     
 
-def main(argv: list[str]) -> int:
+def execute(argv: list[str]) -> int:
     parser = create_parser()
 
     try:
@@ -54,3 +54,7 @@ def main(argv: list[str]) -> int:
         print(exc, file=sys.stderr)
         return 1
     return 0
+
+
+def main() -> int:
+    return execute(sys.argv[1:])
