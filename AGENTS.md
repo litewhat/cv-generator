@@ -34,3 +34,4 @@ cairo, pango, gdk-pixbuf, libffi (Homebrew on macOS). When changing PDF output, 
 - Scope changes to what was asked. Do not scaffold the full app unprompted.
 - English for code, comments, and docs unless the user writes in another language.
 - No git init or commits unless requested.
+- Only use `git worktree` when explicitly instructed; never create or use worktrees otherwise.
