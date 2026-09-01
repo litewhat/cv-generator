@@ -1,0 +1,33 @@
+{
+  "name": "Alex Fullstack",
+  "title": "Full Stack Engineer",
+  "email": "alex@example.com",
+  "phone_number": "+46 8 123 456",
+  "location": "Stockholm, Sweden",
+  "social_profiles": [
+    {
+      "type": "github",
+      "url": "https://github.com/example"
+    },
+    {
+      "type": "linkedin",
+      "url": "https://linkedin.com/in/example"
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Skills",
+      "nodes": [
+        "TypeScript, Python, SQL",
+        {
+          "name": "Platforms",
+          "nodes": [
+            "AWS",
+            "GCP"
+          ]
+        },
+        "Spoken languages: English, Polish"
+      ]
+    }
+  ]
+}

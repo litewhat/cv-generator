@@ -1,0 +1,26 @@
+{
+  "name": "Open Source Maintainer",
+  "title": "Open Source Maintainer",
+  "email": "oss@example.com",
+  "phone_number": "+44 20 7946 0958",
+  "location": "London, UK",
+  "social_profiles": [
+    {
+      "type": "github",
+      "url": "https://github.com/example"
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Projects",
+      "nodes": [
+        {
+          "name": "cv-generator",
+          "nodes": [
+            "CLI that turns Markdown CVs into PDFs."
+          ]
+        }
+      ]
+    }
+  ]
+}

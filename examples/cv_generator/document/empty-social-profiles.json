@@ -1,0 +1,17 @@
+{
+  "name": "Alex Writer",
+  "title": "Technical Writer",
+  "email": "alex@example.com",
+  "phone_number": "+33 1 23 45 67 89",
+  "location": "Paris, France",
+  "social_profiles": [],
+  "nodes": [
+    {
+      "name": "Summary",
+      "nodes": [
+        "Writes developer docs and API references.",
+        "Previously a support engineer."
+      ]
+    }
+  ]
+}

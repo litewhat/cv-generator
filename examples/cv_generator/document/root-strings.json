@@ -1,0 +1,22 @@
+{
+  "name": "Alex Backend",
+  "title": "Backend Developer",
+  "email": "alex@example.com",
+  "phone_number": "+48 600 100 200",
+  "location": "Warsaw, Poland",
+  "social_profiles": [
+    {
+      "type": "github",
+      "url": "https://github.com/example"
+    },
+    {
+      "type": "linkedin",
+      "url": "https://linkedin.com/in/example"
+    }
+  ],
+  "nodes": [
+    "Python and Go, mostly APIs and data pipelines.",
+    "Comfortable owning services from design through on-call.",
+    "Warsaw, open to remote."
+  ]
+}

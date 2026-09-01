@@ -1,0 +1,60 @@
+{
+  "name": "Paweł Zielonka",
+  "title": "Software Engineer",
+  "email": "lite.what@gmail.com",
+  "phone_number": "+48 514 419 567",
+  "location": "Warsaw, Poland",
+  "social_profiles": [
+    {
+      "type": "github",
+      "url": "https://github.com/litewhat"
+    },
+    {
+      "type": "linkedin",
+      "url": "https://linkedin.com/litewhat"
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Experience",
+      "nodes": [
+        {
+          "name": "Company A",
+          "nodes": [
+            {
+              "name": "Project 1",
+              "nodes": [
+                "Project 1 description"
+              ]
+            },
+            {
+              "name": "Project 2",
+              "nodes": [
+                "Project 2 description"
+              ]
+            },
+            {
+              "name": "Project 2",
+              "nodes": [
+                {
+                  "name": "Achievement 1",
+                  "nodes": [
+                    "Achievement 1 description 1",
+                    "Achievement 1 description 2"
+                  ]
+                },
+                {
+                  "name": "Achievement 2",
+                  "nodes": [
+                    "Achievement 2 description 1",
+                    "Achievement 2 description 2"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
