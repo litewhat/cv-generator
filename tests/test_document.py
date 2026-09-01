@@ -1,11 +1,284 @@
+import json
+from pathlib import Path
+
 import pytest
 
-from cv_generator.document import Data, Document, Node, ParseError, SocialProfile
+from cv_generator.document import (
+    Content,
+    Document,
+    Node,
+    ParseError,
+    SocialProfile,
+    ValidationError,
+)
 from cv_generator.parse_markdown import parse_markdown
 
+_EXAMPLES = Path(__file__).resolve().parents[1] / "examples" / "cv_generator" / "document"
 
-def _sample_data() -> Data:
-    return Data(
+_VALID_HEADER = {
+    "name": "Ada Lovelace",
+    "title": "Software Engineer",
+    "email": "ada@example.com",
+    "phone_number": "+48 111 222 333",
+    "location": "Warsaw, Poland",
+}
+
+
+def _header(**overrides: object) -> dict[str, object]:
+    raw: dict[str, object] = dict(_VALID_HEADER)
+    raw.update(overrides)
+    return raw
+
+
+def test_validation_error_is_a_sibling_of_parse_error():
+    assert issubclass(ValidationError, Exception)
+    assert not issubclass(ValidationError, ValueError)
+    assert not issubclass(ValidationError, ParseError)
+    assert not issubclass(ParseError, ValidationError)
+
+
+def test_from_mapping_reads_required_header_fields():
+    content = Content.from_mapping(_VALID_HEADER)
+    assert content == Content(
+        name="Ada Lovelace",
+        title="Software Engineer",
+        email="ada@example.com",
+        phone_number="+48 111 222 333",
+        location="Warsaw, Poland",
+        social_profiles=(),
+        nodes=(),
+    )
+
+
+def test_from_mapping_strips_header_strings():
+    content = Content.from_mapping(
+        _header(
+            name="  Ada Lovelace  ",
+            title="  Software Engineer  ",
+            email="  ada@example.com  ",
+            phone_number="  +48 111 222 333  ",
+            location="  Warsaw, Poland  ",
+        )
+    )
+    assert content.name == "Ada Lovelace"
+    assert content.title == "Software Engineer"
+    assert content.email == "ada@example.com"
+    assert content.phone_number == "+48 111 222 333"
+    assert content.location == "Warsaw, Poland"
+
+
+def test_from_mapping_ignores_extra_keys_including_format():
+    content = Content.from_mapping(
+        _header(website="https://ada.dev", format="markdown", source_format="html")
+    )
+    assert content.name == "Ada Lovelace"
+    assert not hasattr(content, "website")
+
+
+def test_from_mapping_does_not_read_phone_or_links_aliases():
+    raw = _header()
+    del raw["phone_number"]
+    raw["phone"] = "+48 111 222 333"
+    with pytest.raises(ValidationError, match="Missing field 'phone_number'"):
+        Content.from_mapping(raw)
+
+
+@pytest.mark.parametrize("key", ["name", "title", "email", "phone_number", "location"])
+def test_from_mapping_missing_header_field_raises(key: str):
+    raw = _header()
+    del raw[key]
+    with pytest.raises(ValidationError, match=f"Missing field '{key}'"):
+        Content.from_mapping(raw)
+
+
+@pytest.mark.parametrize("key", ["name", "title", "email", "phone_number", "location"])
+def test_from_mapping_empty_header_field_raises(key: str):
+    with pytest.raises(ValidationError, match=f"Field '{key}' must be a non-empty string"):
+        Content.from_mapping(_header(**{key: "   "}))
+
+
+def test_from_mapping_non_string_title_raises():
+    with pytest.raises(ValidationError, match="Field 'title' must be a string"):
+        Content.from_mapping(_header(title=1))
+
+
+def test_from_mapping_rejects_non_mapping():
+    with pytest.raises(ValidationError, match="Expected a mapping"):
+        Content.from_mapping(["not", "a", "mapping"])  # type: ignore[arg-type]
+
+
+def test_from_mapping_absent_social_profiles_is_empty():
+    assert Content.from_mapping(_VALID_HEADER).social_profiles == ()
+
+
+def test_from_mapping_none_social_profiles_is_empty():
+    assert Content.from_mapping(_header(social_profiles=None)).social_profiles == ()
+
+
+def test_from_mapping_empty_social_profiles_sequence_is_empty():
+    assert Content.from_mapping(_header(social_profiles=[])).social_profiles == ()
+    assert Content.from_mapping(_header(social_profiles=())).social_profiles == ()
+
+
+def test_from_mapping_social_profiles_preserve_list_order():
+    content = Content.from_mapping(
+        _header(
+            social_profiles=[
+                {"type": "linkedin", "url": "https://linkedin.com/in/ada"},
+                {"type": "github", "url": "https://github.com/ada"},
+            ]
+        )
+    )
+    assert content.social_profiles == (
+        SocialProfile(type="linkedin", url="https://linkedin.com/in/ada"),
+        SocialProfile(type="github", url="https://github.com/ada"),
+    )
+
+
+def test_from_mapping_social_profiles_ignore_extra_keys():
+    content = Content.from_mapping(
+        _header(
+            social_profiles=[
+                {"type": "github", "url": "https://github.com/ada", "note": "personal"},
+            ]
+        )
+    )
+    assert content.social_profiles == (
+        SocialProfile(type="github", url="https://github.com/ada"),
+    )
+
+
+def test_from_mapping_empty_url_is_allowed():
+    content = Content.from_mapping(
+        _header(social_profiles=[{"type": "github", "url": ""}])
+    )
+    assert content.social_profiles == (SocialProfile(type="github", url=""),)
+
+
+def test_from_mapping_unknown_social_type_raises():
+    with pytest.raises(ValidationError, match="Unsupported social profile type"):
+        Content.from_mapping(
+            _header(social_profiles=[{"type": "twitter", "url": "https://twitter.com/ada"}])
+        )
+
+
+def test_from_mapping_social_profiles_string_raises():
+    with pytest.raises(ValidationError, match="Field 'social_profiles' must be a sequence"):
+        Content.from_mapping(_header(social_profiles="https://github.com/ada"))
+
+
+def test_from_mapping_nested_profile_url_raises():
+    with pytest.raises(ValidationError, match="Field 'url' must be a string"):
+        Content.from_mapping(
+            _header(social_profiles=[{"type": "github", "url": {"href": "https://github.com/ada"}}])
+        )
+
+
+def test_from_mapping_profile_not_a_mapping_raises():
+    with pytest.raises(ValidationError, match="Social profile must be a mapping"):
+        Content.from_mapping(_header(social_profiles=["github"]))
+
+
+def test_from_mapping_absent_nodes_is_empty():
+    assert Content.from_mapping(_VALID_HEADER).nodes == ()
+
+
+def test_from_mapping_none_nodes_is_empty():
+    assert Content.from_mapping(_header(nodes=None)).nodes == ()
+
+
+def test_from_mapping_nodes_accepts_tuple():
+    content = Content.from_mapping(_header(nodes=("Intro",)))
+    assert content.nodes == ("Intro",)
+
+
+def test_from_mapping_nodes_mixed_children():
+    content = Content.from_mapping(
+        _header(
+            nodes=[
+                "Intro",
+                {"name": "Experience", "nodes": ["Did a thing"]},
+            ]
+        )
+    )
+    assert content.nodes == (
+        "Intro",
+        Node(name="Experience", nodes=("Did a thing",)),
+    )
+
+
+def test_from_mapping_node_strips_name_and_defaults_missing_nodes():
+    content = Content.from_mapping(
+        _header(nodes=[{"name": "  Experience  ", "extra": True}])
+    )
+    assert content.nodes == (Node(name="Experience", nodes=()),)
+
+
+def test_from_mapping_nodes_string_raises():
+    with pytest.raises(ValidationError, match="Field 'nodes' must be a sequence"):
+        Content.from_mapping(_header(nodes="Intro"))
+
+
+def test_from_mapping_missing_node_name_raises():
+    with pytest.raises(ValidationError, match="Missing field 'name'"):
+        Content.from_mapping(_header(nodes=[{"nodes": ["Did a thing"]}]))
+
+
+def test_from_mapping_empty_node_name_raises():
+    with pytest.raises(ValidationError, match="Field 'name' must be a non-empty string"):
+        Content.from_mapping(_header(nodes=[{"name": "   ", "nodes": []}]))
+
+
+def test_from_mapping_non_string_node_name_raises():
+    with pytest.raises(ValidationError, match="Field 'name' must be a string"):
+        Content.from_mapping(_header(nodes=[{"name": 1, "nodes": []}]))
+
+
+def test_from_mapping_node_child_neither_str_nor_mapping_raises():
+    with pytest.raises(ValidationError, match="Node child must be a string or mapping"):
+        Content.from_mapping(_header(nodes=[{"name": "Experience", "nodes": [1]}]))
+
+
+def _node_to_json(node: Node | str) -> object:
+    if isinstance(node, str):
+        return node
+    return {"name": node.name, "nodes": [_node_to_json(child) for child in node.nodes]}
+
+
+def _content_to_json(content: Content) -> dict[str, object]:
+    return {
+        "name": content.name,
+        "title": content.title,
+        "email": content.email,
+        "phone_number": content.phone_number,
+        "location": content.location,
+        "social_profiles": [
+            {"type": profile.type, "url": profile.url} for profile in content.social_profiles
+        ],
+        "nodes": [_node_to_json(node) for node in content.nodes],
+    }
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "empty-social-profiles.json",
+        "github-only.json",
+        "linkedin-only.json",
+        "mixed-children.json",
+        "mixed-root.json",
+        "nested-experience.json",
+        "production-like.json",
+        "root-strings.json",
+    ],
+)
+def test_from_mapping_accepts_example_goldens(filename: str):
+    raw = json.loads((_EXAMPLES / filename).read_text(encoding="utf-8"))
+    assert _content_to_json(Content.from_mapping(raw)) == raw
+
+
+def _sample_content() -> Content:
+    return Content(
         name="Ada Lovelace",
         title="Software Engineer",
         email="ada@example.com",
@@ -26,8 +299,8 @@ def test_parse_error_is_an_exception():
     assert not issubclass(ParseError, ValueError)
 
 
-def test_data_holds_all_header_fields_and_nodes():
-    data = _sample_data()
+def test_content_holds_all_header_fields_and_nodes():
+    data = _sample_content()
     assert data.name == "Ada Lovelace"
     assert data.title == "Software Engineer"
     assert data.email == "ada@example.com"
@@ -36,13 +309,6 @@ def test_data_holds_all_header_fields_and_nodes():
     assert data.social_profiles[0].type == "github"
     assert data.nodes[0] == "Intro"
     assert data.nodes[1].name == "Experience"
-
-
-def test_document_exposes_public_format_and_data():
-    data = _sample_data()
-    document = Document(format="markdown", data=data)
-    assert document.format == "markdown"
-    assert document.data is data
 
 
 _MD = """---
@@ -59,29 +325,74 @@ Did a thing.
 """
 
 
-def test_parse_wraps_parse_markdown_data():
+def test_document_exposes_public_source_format_and_content():
+    content = _sample_content()
+    document = Document(source_format="markdown", content=content)
+    assert document.source_format == "markdown"
+    assert document.content is content
+
+
+def test_parse_equals_from_mapping_of_parse_markdown():
     document = Document.parse(_MD)
-    assert document.format == "markdown"
-    assert document.data == parse_markdown(_MD)
-    assert document.data.nodes[0].name == "Experience"
+    assert document == Document(
+        source_format="markdown",
+        content=Content.from_mapping(parse_markdown(_MD)),
+    )
+    assert document.source_format == "markdown"
+    assert document.content.nodes[0].name == "Experience"
 
 
-def test_parse_default_format_is_markdown():
-    document = Document.parse(_MD)
-    assert document.format == "markdown"
+def test_parse_default_source_format_is_markdown():
+    assert Document.parse(_MD).source_format == "markdown"
 
 
-def test_parse_explicit_markdown_format():
-    document = Document.parse(_MD, format="markdown")
-    assert document.format == "markdown"
-    assert document.data == parse_markdown(_MD)
+def test_parse_explicit_markdown_source_format_matches_default():
+    default = Document.parse(_MD)
+    explicit = Document.parse(_MD, source_format="markdown")
+    assert default == explicit
+    assert explicit.source_format == "markdown"
 
 
-def test_parse_unsupported_format_raises_value_error():
-    with pytest.raises(ValueError, match="Unsupported format"):
-        Document.parse(_MD, format="html")  # type: ignore[arg-type]
+def test_parse_unsupported_source_format_raises_value_error():
+    with pytest.raises(ValueError, match="Unsupported source_format"):
+        Document.parse(_MD, source_format="html")  # type: ignore[arg-type]
 
 
-def test_parse_does_not_turn_source_errors_into_value_error():
-    with pytest.raises(ParseError, match="Missing frontmatter field 'name'"):
+def test_parse_value_error_is_not_parse_or_validation_error():
+    with pytest.raises(ValueError) as excinfo:
+        Document.parse(_MD, source_format="html")  # type: ignore[arg-type]
+    assert not isinstance(excinfo.value, ParseError)
+    assert not isinstance(excinfo.value, ValidationError)
+
+
+def test_parse_empty_source_raises_validation_error():
+    with pytest.raises(ValidationError, match="Missing field 'name'"):
         Document.parse("")
+
+
+def test_parse_body_without_frontmatter_raises_validation_error():
+    with pytest.raises(ValidationError, match="Missing field 'name'"):
+        Document.parse("# Hello\n")
+
+
+def test_parse_unclosed_yaml_raises_parse_error():
+    with pytest.raises(ParseError, match="Unclosed YAML frontmatter"):
+        Document.parse("---\nname: Ada\n")
+
+
+def test_parse_does_not_convert_parse_error_into_validation_error():
+    with pytest.raises(ParseError):
+        Document.parse("---\nname: Ada\n")
+
+
+def test_parse_error_is_reexported_from_document():
+    from cv_generator.parse_markdown import ParseError as ParserParseError
+
+    assert ParseError is ParserParseError
+
+
+def test_validate_document_is_gone():
+    import cv_generator.document as document_module
+
+    assert not hasattr(document_module, "validate_document")
+    assert not hasattr(document_module, "Data")

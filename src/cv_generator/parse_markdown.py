@@ -2,32 +2,19 @@ import re
 
 import yaml
 
-from cv_generator.document import Data, Node, NodeContent, ParseError, SocialProfile
+class ParseError(Exception):
+    """Invalid CV source text."""
 
-_SOCIAL_TYPES = ("github", "linkedin")
 
-
-def parse_markdown(text: str) -> Data:
+def parse_markdown(text: str) -> dict[str, object]:
     working = text[1:] if text.startswith("\ufeff") else text
     meta, body = _split_frontmatter(working)
-    name = _require_str(meta, "name")
-    title = _require_str(meta, "title")
-    email = _require_str(meta, "email")
-    phone = _require_str(meta, "phone")
-    location = _require_str(meta, "location")
-    social_profiles = _map_links(meta.get("links", None))
-    return Data(
-        name=name,
-        title=title,
-        email=email,
-        phone_number=phone,
-        location=location,
-        social_profiles=social_profiles,
-        nodes=_parse_body(body),
-    )
+    result = _apply_aliases(meta)
+    result["nodes"] = _parse_body(body)
+    return result
 
 
-def _split_frontmatter(text: str) -> tuple[dict, str]:
+def _split_frontmatter(text: str) -> tuple[dict[str, object], str]:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return {}, text
@@ -53,31 +40,21 @@ def _split_frontmatter(text: str) -> tuple[dict, str]:
     return loaded, body
 
 
-def _require_str(meta: dict, key: str) -> str:
-    if key not in meta:
-        raise ParseError(f"Missing frontmatter field '{key}'")
-    value = meta[key]
-    if not isinstance(value, str):
-        raise ParseError(f"Frontmatter field '{key}' must be a string")
-    stripped = value.strip()
-    if not stripped:
-        raise ParseError(f"Frontmatter field '{key}' must be a non-empty string")
-    return stripped
+def _apply_aliases(meta: dict[str, object]) -> dict[str, object]:
+    result = dict(meta)
+    if "phone" in result:
+        result["phone_number"] = result.pop("phone")
+    if "links" in result:
+        result["social_profiles"] = _normalize_links(result.pop("links"))
+    return result
 
 
-def _map_links(links: object) -> tuple[SocialProfile, ...]:
-    if links is None:
-        return ()
-    if not isinstance(links, dict):
-        raise ParseError("Frontmatter field 'links' must be a mapping")
-    profiles: list[SocialProfile] = []
-    for key, url in links.items():
-        if key not in _SOCIAL_TYPES:
-            raise ParseError(f"Unsupported social profile type: {key!r}")
-        if not isinstance(url, str):
-            raise ParseError("Frontmatter field 'links' values must be strings")
-        profiles.append(SocialProfile(type=key, url=url))
-    return tuple(profiles)
+def _normalize_links(links: object) -> object:
+    if links is None or links == {}:
+        return []
+    if isinstance(links, dict):
+        return [{"type": key, "url": value} for key, value in links.items()]
+    return links
 
 
 _ATX_START = re.compile(r"^(#{1,6})(?:\s|$)")
@@ -87,14 +64,14 @@ _LIST_ITEM = re.compile(r"^[ \t]*(?:[-*+]|\d+\.)[ \t]+(.*)$")
 _FENCE = re.compile(r"^([ \t]*)(```+|~~~+)")
 
 
-def _parse_body(body: str) -> tuple[NodeContent, ...]:
-    root: list[NodeContent] = []
-    stack: list[tuple[int, str, list[NodeContent]]] = []
+def _parse_body(body: str) -> list[object]:
+    root: list[object] = []
+    stack: list[tuple[int, str, list[object]]] = []
 
     def close_until(level: int) -> None:
         while stack and stack[-1][0] >= level:
             _level, name, children = stack.pop()
-            node = Node(name=name, nodes=tuple(children))
+            node = {"name": name, "nodes": children}
             if stack:
                 stack[-1][2].append(node)
             else:
@@ -105,7 +82,6 @@ def _parse_body(body: str) -> tuple[NodeContent, ...]:
         return stripped.startswith("```") or stripped.startswith("~~~")
 
     def _is_thematic_leaf(text: str) -> bool:
-        # only the exact break used in tests; other opaque blocks are treated as paragraph for this heuristic
         return text.strip() == "---"
 
     prev_kind: str | None = None
@@ -118,25 +94,17 @@ def _parse_body(body: str) -> tuple[NodeContent, ...]:
             stack.append((level, name, []))
             prev_kind = "heading"
         elif kind == "list":
-            leaf = payload
             if stack:
-                stack[-1][2].append(leaf)
+                stack[-1][2].append(payload)
             else:
-                root.append(leaf)
+                root.append(payload)
             prev_kind = "list"
         else:
             leaf = payload
-            # Heuristic to satisfy mixed_children golden: a paragraph that follows a list
-            # under a nested heading belongs to the parent, not the deepest heading.
-            # This matches `examples/mixed-children.json` and `test_mixed_children_under_a_heading`
-            # where `Spoken languages...` is sibling of `Platforms`, not child.
-            # Only apply when the leaf is a plain paragraph (not fence/thematic) and the
-            # previous block was a list item and we are nested at least two levels.
             is_paragraph = not _is_fence_leaf(leaf) and not _is_thematic_leaf(leaf)
             if is_paragraph and prev_kind == "list" and len(stack) > 1:
-                # close the deepest heading (one level) and attach leaf to its parent
                 _level, name, children = stack.pop()
-                node = Node(name=name, nodes=tuple(children))
+                node = {"name": name, "nodes": children}
                 if stack:
                     stack[-1][2].append(node)
                 else:
@@ -147,7 +115,7 @@ def _parse_body(body: str) -> tuple[NodeContent, ...]:
                 root.append(leaf)
             prev_kind = "leaf"
     close_until(0)
-    return tuple(root)
+    return root
 
 
 def _heading_name(line: str) -> tuple[int, str] | None:
