@@ -29,9 +29,13 @@ Do not use system Python or `pip`. Prefer `uv add` / `uv remove` over editing `p
 
 cairo, pango, gdk-pixbuf, libffi (Homebrew on macOS). When changing PDF output, verify a real PDF (`%PDF` header / `HTML(...).write_pdf()`), not only `import weasyprint`.
 
+## Git
+
+- Only the developer (human) may commit, push, rebase, merge, or perform any other git state-changing operation (including `git init`, `amend`, `reset`, `cherry-pick`, `revert`, `tag`, `branch -d/-m`, `stash`, etc.). Coding agents must not change git state unless explicitly requested by the developer (human).
+- Agents may use read-only git commands (`status`, `log`, `diff`, `show`) for inspection without explicit request.
+
 ## Conventions
 
 - Scope changes to what was asked. Do not scaffold the full app unprompted.
 - English for code, comments, and docs unless the user writes in another language.
-- No git init or commits unless requested.
 - Only use `git worktree` when explicitly instructed; never create or use worktrees otherwise.
