@@ -2,7 +2,7 @@
 
 ## Project
 
-Local CLI that will turn Markdown CVs into PDFs with Jinja2 and WeasyPrint. The toolchain is ready; `src/cv_generator` is still a uv-init stub. `notatki.md` is personal notes, not a spec — do not implement those ideas unless the user asks.
+Local CLI that turns Markdown CVs into PDFs with Jinja2 and WeasyPrint. The `generate-pdf` command is implemented.
 
 Do not duplicate this file into the README. Keep this file short and actionable.
 
@@ -11,14 +11,16 @@ Do not duplicate this file into the README. Keep this file short and actionable.
 - Python `>=3.14`, pin in `.python-version`
 - uv for interpreter, venv (`.venv`), deps, and lockfile
 - Packaged src layout: `src/cv_generator`, build backend `uv_build`
-- Libraries: `jinja2`, `markdown`, `weasyprint`
+- Runtime: `jinja2`, `markdown`, `pyyaml`, `weasyprint`
+- Dev: `pytest` (installed by `uv sync`)
 
 ## Commands
 
 ```bash
 uv sync
 uv run python
-uv run cv-generator
+uv run cv-generator generate-pdf -i cv.md -o cv.pdf
+uv run pytest
 uv add <package>
 uv remove <package>
 ```
@@ -28,6 +30,16 @@ Do not use system Python or `pip`. Prefer `uv add` / `uv remove` over editing `p
 ## Native deps (WeasyPrint)
 
 cairo, pango, gdk-pixbuf, libffi (Homebrew on macOS). When changing PDF output, verify a real PDF (`%PDF` header / `HTML(...).write_pdf()`), not only `import weasyprint`.
+
+## Architecture
+
+Two separate Markdown paths — do not merge them unless asked:
+
+- **PDF pipeline** (`generate_pdf`): `frontmatter.parse_frontmatter` → `markdown_to_html` → `html_document` → `html_to_pdf`. `html_document` hardcodes `templates/elegant-v1.html.j2`. Unused: `default-v1/v2/v3`.
+- **Structured model** (`document.py` + `parse_markdown.py`): `Document` / `Content` / `Node` tree. Tests and JSON fixtures in `examples/cv_generator/document/`. Not used by `generate_pdf`. `parse_markdown` must not import `document`.
+- Do not share or unify the two YAML frontmatter parsers. PDF keeps `phone` and `links`. The structured path aliases `phone` → `phone_number` and `links` → `social_profiles`. `parse_markdown` returns a dict; `document.py` validates — do not move validation into the parser.
+- Load templates with `importlib.resources` (`cv_generator/templates/...`), not filesystem paths. Keep `elegant-v1` ATS-safe single-column (no CSS grid, flex, or absolute). Markdown extensions stay `fenced_code`, `tables`, `sane_lists`.
+- Keep `weasyprint` and `yaml` lazy (not imported when loading `cv_generator.cli`).
 
 ## Git
 
@@ -39,3 +51,6 @@ cairo, pango, gdk-pixbuf, libffi (Homebrew on macOS). When changing PDF output, 
 - Scope changes to what was asked. Do not scaffold the full app unprompted.
 - English for code, comments, and docs unless the user writes in another language.
 - Only use `git worktree` when explicitly instructed; never create or use worktrees otherwise.
+- Tests live in `tests/` (one file per module). Run `uv run pytest` after behavior changes.
+- Ask before adding a dependency or new tooling (ruff, mypy, formatters, extra Markdown extensions).
+- Do not read or edit `.local/` or `.env`.

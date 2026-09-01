@@ -6,6 +6,9 @@ deny = [
   "Grep(.local/**)",
   "Edit(.local)",
   "Edit(.local/**)",
+  "Read(.env)",
+  "Grep(.env)",
+  "Edit(.env)",
 ]
 
 [tools]
