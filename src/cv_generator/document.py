@@ -1,15 +1,11 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Literal
+from typing import ClassVar, Literal
 
 from cv_generator.parse_markdown import ParseError, parse_markdown
 
 type SocialProfileType = Literal["github", "linkedin"]
 type NodeContent = Node | str
-
-_SOCIAL_TYPES = frozenset({"github", "linkedin"})
-_HEADER_FIELDS = ("name", "title", "email", "phone_number", "location")
-
 
 class ValidationError(Exception):
     """Parsed mapping does not match the content schema."""
@@ -33,6 +29,8 @@ def _require_non_empty_str(raw: Mapping[object, object], key: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class SocialProfile:
+    TYPES: ClassVar[frozenset[SocialProfileType]] = frozenset({"github", "linkedin"})
+
     type: SocialProfileType
     url: str
 
@@ -41,7 +39,7 @@ class SocialProfile:
         if not isinstance(raw, Mapping):
             raise ValidationError("Social profile must be a mapping")
         profile_type = raw.get("type")
-        if profile_type not in _SOCIAL_TYPES:
+        if profile_type not in cls.TYPES:
             raise ValidationError(f"Unsupported social profile type: {profile_type!r}")
         url = raw.get("url")
         if not isinstance(url, str):
@@ -62,6 +60,8 @@ class Node:
 
 @dataclass(frozen=True, slots=True)
 class Content:
+    HEADER_FIELDS: ClassVar[tuple[str, ...]] = ("name", "title", "email", "phone_number", "location")
+
     name: str
     title: str
     email: str
@@ -74,7 +74,7 @@ class Content:
     def from_mapping(cls, raw: Mapping[str, object]) -> Content:
         if not isinstance(raw, Mapping):
             raise ValidationError("Expected a mapping")
-        header = {key: _require_non_empty_str(raw, key) for key in _HEADER_FIELDS}
+        header = {key: _require_non_empty_str(raw, key) for key in cls.HEADER_FIELDS}
         return cls(
             name=header["name"],
             title=header["title"],
@@ -95,12 +95,12 @@ class Document:
     def parse(
         text: str,
         *,
-        source_format: Literal["markdown"] = "markdown",
+        format: Literal["markdown"] = "markdown",
     ) -> Document:
-        if source_format != "markdown":
-            raise ValueError(f"Unsupported source_format: {source_format!r}")
+        if format != "markdown":
+            raise ValueError(f"Unsupported source_format: {format!r}")
         return Document(
-            source_format=source_format,
+            source_format=format,
             content=Content.from_mapping(parse_markdown(text)),
         )
 

@@ -69,7 +69,7 @@ def test_from_mapping_strips_header_strings():
 
 def test_from_mapping_ignores_extra_keys_including_format():
     content = Content.from_mapping(
-        _header(website="https://ada.dev", format="markdown", source_format="html")
+        _header(website="https://ada.dev", format="markdown")
     )
     assert content.name == "Ada Lovelace"
     assert not hasattr(content, "website")
@@ -348,19 +348,19 @@ def test_parse_default_source_format_is_markdown():
 
 def test_parse_explicit_markdown_source_format_matches_default():
     default = Document.parse(_MD)
-    explicit = Document.parse(_MD, source_format="markdown")
+    explicit = Document.parse(_MD, format="markdown")
     assert default == explicit
     assert explicit.source_format == "markdown"
 
 
 def test_parse_unsupported_source_format_raises_value_error():
     with pytest.raises(ValueError, match="Unsupported source_format"):
-        Document.parse(_MD, source_format="html")  # type: ignore[arg-type]
+        Document.parse(_MD, format="html")  # type: ignore[arg-type]
 
 
 def test_parse_value_error_is_not_parse_or_validation_error():
     with pytest.raises(ValueError) as excinfo:
-        Document.parse(_MD, source_format="html")  # type: ignore[arg-type]
+        Document.parse(_MD, format="html")  # type: ignore[arg-type]
     assert not isinstance(excinfo.value, ParseError)
     assert not isinstance(excinfo.value, ValidationError)
 

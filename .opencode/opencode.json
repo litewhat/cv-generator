@@ -2,5 +2,20 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "opencode-ignore"
-  ]
+  ],
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "cat *": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "git status *": "allow",
+      "grep *": "allow",
+      "head *": "allow",
+      "ls *": "allow",
+      "tail *": "allow",
+      "uv run pytest *": "allow"
+    }
+  }
 }
