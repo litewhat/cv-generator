@@ -1,0 +1,15 @@
+[permission]
+deny = [
+  "Read(.local)",
+  "Read(.local/**)",
+  "Grep(.local)",
+  "Grep(.local/**)",
+  "Edit(.local)",
+  "Edit(.local/**)",
+  "Read(.env)",
+  "Grep(.env)",
+  "Edit(.env)",
+]
+
+[tools]
+respect_gitignore = true

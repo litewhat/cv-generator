@@ -1,0 +1,38 @@
+{
+  "name": "Alex Staff",
+  "title": "Staff Engineer",
+  "email": "alex@example.com",
+  "phone_number": "+1 415 555 0100",
+  "location": "San Francisco, USA",
+  "social_profiles": [
+    {
+      "type": "github",
+      "url": "https://github.com/example"
+    },
+    {
+      "type": "linkedin",
+      "url": "https://linkedin.com/in/example"
+    }
+  ],
+  "nodes": [
+    "Builds payment and billing systems. Prefers small teams and boring technology.",
+    {
+      "name": "Experience",
+      "nodes": [
+        {
+          "name": "Northwind",
+          "nodes": [
+            "Led the checkout rewrite from a monolith to three services.",
+            "Cut p95 authorization latency from 800ms to 120ms."
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Education",
+      "nodes": [
+        "BSc Computer Science, University of Warsaw, 2016"
+      ]
+    }
+  ]
+}

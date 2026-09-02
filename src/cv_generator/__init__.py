@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from cv-generator!")
+"""Markdown to PDF CV generator."""

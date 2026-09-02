@@ -1,0 +1,27 @@
+{
+  "name": "Alex Manager",
+  "title": "Engineering Manager",
+  "email": "alex@example.com",
+  "phone_number": "+49 30 123456",
+  "location": "Berlin, Germany",
+  "social_profiles": [
+    {
+      "type": "linkedin",
+      "url": "https://linkedin.com/in/example"
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Experience",
+      "nodes": [
+        {
+          "name": "Acme GmbH",
+          "nodes": [
+            "Managed a team of 8 backend engineers.",
+            "Hired and onboarded 4 people in 2024."
+          ]
+        }
+      ]
+    }
+  ]
+}

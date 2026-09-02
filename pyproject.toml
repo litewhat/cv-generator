@@ -9,12 +9,38 @@ requires-python = ">=3.14"
 dependencies = [
     "jinja2>=3.1.6",
     "markdown>=3.10.3",
+    "pyyaml>=6.0.3",
     "weasyprint>=69.0",
 ]
 
 [project.scripts]
-cv-generator = "cv_generator:main"
+cv-generator = "cv_generator.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.5",
+    "ty>=0.0.77",
+]
+
+[tool.ruff]
+target-version = "py314"
+src = ["src", "tests"]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty.src]
+include = ["src", "tests"]
+
+[tool.uv.build-backend]
+module-name = ["cv_generator", "lib"]
