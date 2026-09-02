@@ -57,4 +57,7 @@ def _render_children(children: tuple[NodeContent, ...], depth: int) -> str:
 def _render_node(node: Node, depth: int) -> str:
     level = min(depth, 6)
     heading = f"<h{level}>{escape(node.name)}</h{level}>"
-    return heading + _render_children(node.nodes, depth)
+    inner = heading + _render_children(node.nodes, depth)
+    if depth >= 2:
+        return f'<section class="cv-keep">{inner}</section>'
+    return inner

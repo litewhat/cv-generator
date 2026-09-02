@@ -141,6 +141,7 @@ class TestBodyHeadings:
         assert "<h1>Experience</h1>" in html
         assert "<h2>Northwind</h2>" in html
         assert "<h3>Checkout</h3>" in html
+        assert html.count('<section class="cv-keep">') == 2
 
     def test_heading_depth_caps_at_h6(self):
         node: dict[str, object] = {"name": "L7", "nodes": []}
@@ -160,6 +161,56 @@ class TestBodyHeadings:
         html = _body(to_html(_parse("## A < B **x**\n")))
         assert "<h1>A &lt; B **x**</h1>" in html
         assert "<strong>" not in html
+
+
+class TestKeepTogether:
+    def test_top_level_section_is_not_wrapped(self):
+        html = _body(to_html(_parse("## Experience\n")))
+        assert '<section class="cv-keep">' not in html
+        assert "<h1>Experience</h1>" in html
+
+    def test_job_and_project_are_nested_keep_sections(self):
+        html = _body(
+            to_html(
+                _parse(
+                    "## Experience\n\n"
+                    "### Northwind\n\n"
+                    "Role · dates\n\n"
+                    "#### Checkout\n\n"
+                    "- Shipped v2\n"
+                )
+            )
+        )
+        assert "<h1>Experience</h1>" in html
+        assert html.index("<h1>Experience</h1>") < html.index(
+            '<section class="cv-keep">'
+        )
+        assert (
+            '<section class="cv-keep"><h2>Northwind</h2>'
+            in html.replace("\n", "")
+        )
+        assert (
+            '<section class="cv-keep"><h3>Checkout</h3>'
+            in html.replace("\n", "")
+        )
+        compact = html.replace("\n", "")
+        northwind_open = compact.index('<section class="cv-keep"><h2>Northwind</h2>')
+        checkout_open = compact.index('<section class="cv-keep"><h3>Checkout</h3>')
+        assert northwind_open < checkout_open
+        inner_close = compact.index("</section>", checkout_open)
+        outer_close = compact.index("</section>", inner_close + len("</section>"))
+        assert inner_close < outer_close
+
+    def test_root_paragraphs_are_not_wrapped(self):
+        html = _body(to_html(_parse("Builds payment systems.\n")))
+        assert '<section class="cv-keep">' not in html
+        assert "<p>Builds payment systems.</p>" in html
+
+    def test_template_has_keep_together_css(self):
+        html = to_html(_document())
+        assert ".cv-keep" in html
+        assert "page-break-inside: avoid" in html
+        assert "break-inside: avoid" in html
 
 
 class TestBodyRoot:
