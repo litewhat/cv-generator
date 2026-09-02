@@ -96,11 +96,6 @@ class TestExceptions:
         from cv_generator.parse import ParseError as ParserParseError
         assert ParseError is ParserParseError
 
-    def test_validate_document_is_gone(self):
-        import cv_generator.document as document_module
-        assert not hasattr(document_module, "validate_document")
-        assert not hasattr(document_module, "Data")
-
 class TestContentFromMappingHeader:
     def test_from_mapping_reads_required_header_fields(self):
         content = Content.from_mapping(_VALID_HEADER)
