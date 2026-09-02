@@ -9,10 +9,7 @@ from markupsafe import Markup, escape
 from cv_generator.document import Document, Node, NodeContent
 from lib.convert import markdown_to_html
 
-_TABLE_DELIMITER = re.compile(
-    r"^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$"
-)
-_SINGLE_P = re.compile(r"^\s*<p>(.*)</p>\s*$", re.DOTALL)
+_LIST_ITEM = re.compile(r"^[ \t]*(?:[-*+]|\d+\.)[ \t]+(.*)$")
 
 
 def to_html(document: Document) -> str:
@@ -34,56 +31,26 @@ def to_html(document: Document) -> str:
     )
 
 
-def _kind(child: NodeContent) -> str:
-    if isinstance(child, Node):
-        return "node"
-    stripped_start = child.lstrip()
-    if stripped_start.startswith("```") or stripped_start.startswith("~~~"):
-        return "fence"
-    if child.strip() == "---":
-        return "hr"
-    if any(_TABLE_DELIMITER.match(line) for line in child.splitlines()):
-        return "table"
-    return "plain"
-
-
-def _unwrap_single_p(fragment: str) -> str:
-    match = _SINGLE_P.match(fragment)
-    if match is not None:
-        return match.group(1)
-    return fragment
-
-
 def _render_children(children: tuple[NodeContent, ...], depth: int) -> str:
     parts: list[str] = []
-    pending: list[str] = []
+    pending_list: list[str] = []
 
-    def flush() -> None:
-        if not pending:
+    def flush_list() -> None:
+        if not pending_list:
             return
-        if depth == 0:
-            parts.extend(markdown_to_html(leaf) for leaf in pending)
-        else:
-            items = [
-                f"<li>{_unwrap_single_p(markdown_to_html(leaf))}</li>"
-                for leaf in pending
-            ]
-            parts.append("<ul>" + "".join(items) + "</ul>")
-        pending.clear()
+        parts.append(markdown_to_html("\n".join(pending_list)))
+        pending_list.clear()
 
     for child in children:
-        kind = _kind(child)
-        if kind == "plain":
-            pending.append(child)
-            continue
-        flush()
-        if kind == "node":
-            assert isinstance(child, Node)
+        if isinstance(child, Node):
+            flush_list()
             parts.append(_render_node(child, depth + 1))
+        elif _LIST_ITEM.match(child):
+            pending_list.append(child)
         else:
-            assert isinstance(child, str)
+            flush_list()
             parts.append(markdown_to_html(child))
-    flush()
+    flush_list()
     return "".join(parts)
 
 

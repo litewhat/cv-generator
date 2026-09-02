@@ -176,8 +176,8 @@ class TestBodyRoot:
         assert "<p>Hello <strong>Ada</strong></p>" in html
 
 
-class TestBodyLists:
-    def test_consecutive_plains_under_heading_are_one_ul(self):
+class TestBodyNestedLeaves:
+    def test_markdown_list_items_under_heading_are_one_ul(self):
         html = _body(
             to_html(
                 _parse(
@@ -193,15 +193,37 @@ class TestBodyLists:
         assert html.count("<ul>") == 1
         assert "<li>Led the checkout rewrite</li>" in html
         assert "<li>Shipped <strong>v2</strong></li>" in html
-        assert "<li><p>" not in html
+        assert "<p>Led the checkout rewrite</p>" not in html
 
-    def test_single_plain_under_heading_is_still_a_ul(self):
+    def test_paragraph_under_heading_is_not_a_list(self):
         html = _body(to_html(_parse("## Education\n\nBSc Computer Science\n")))
         assert "<h1>Education</h1>" in html
-        assert "<ul>" in html
-        assert "<li>BSc Computer Science</li>" in html
+        assert "<p>BSc Computer Science</p>" in html
+        assert "<ul>" not in html
+        assert "<li>" not in html
 
-    def test_mixed_children_flush_and_restart(self):
+    def test_mixed_children_paragraphs_and_lists(self):
+        html = _body(
+            to_html(
+                _parse(
+                    "## Skills\n\n"
+                    "TypeScript, Python, SQL\n\n"
+                    "### Platforms\n\n"
+                    "- AWS\n"
+                    "- GCP\n\n"
+                    "Spoken languages: English, Polish\n"
+                )
+            )
+        )
+        assert "<h1>Skills</h1>" in html
+        assert "<p>TypeScript, Python, SQL</p>" in html
+        assert "<h2>Platforms</h2>" in html
+        assert html.count("<ul>") == 1
+        assert "<li>AWS</li>" in html
+        assert "<li>GCP</li>" in html
+        assert "<p>Spoken languages: English, Polish</p>" in html
+
+    def test_json_leaves_without_markers_are_paragraphs(self):
         html = _body(
             to_html(
                 Document(
@@ -224,13 +246,10 @@ class TestBodyLists:
                 )
             )
         )
-        assert "<h1>Skills</h1>" in html
-        assert "<h2>Platforms</h2>" in html
-        assert html.count("<ul>") == 3
-        assert "<li>TypeScript, Python, SQL</li>" in html
-        assert "<li>AWS</li>" in html
-        assert "<li>GCP</li>" in html
-        assert "<li>Spoken languages: English, Polish</li>" in html
+        assert "<p>TypeScript, Python, SQL</p>" in html
+        assert "<p>AWS</p>" in html
+        assert "<p>GCP</p>" in html
+        assert "<ul>" not in html
 
     def test_spec_worked_example_body_structure(self):
         html = _body(
@@ -247,6 +266,7 @@ class TestBodyLists:
         assert "<p>Builds payment systems.</p>" in html
         assert "<h1>Experience</h1>" in html
         assert "<h2>Northwind</h2>" in html
+        assert html.count("<ul>") == 1
         assert "<li>Led the checkout rewrite</li>" in html
         assert "<li>Shipped <strong>v2</strong></li>" in html
 

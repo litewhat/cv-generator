@@ -167,7 +167,7 @@ def _iter_blocks(lines: list[str]):
 
         list_item = _LIST_ITEM.match(line)
         if list_item is not None:
-            yield "list", list_item.group(1)
+            yield "list", line
             i += 1
             continue
 

@@ -296,7 +296,7 @@ class TestBodyTree:
                 {
                     "name": "Experience",
                     "nodes": [
-                        {"name": "Northwind", "nodes": ["Led checkout", "Cut latency"]},
+                        {"name": "Northwind", "nodes": ["- Led checkout", "- Cut latency"]},
                     ],
                 },
             ]
@@ -330,7 +330,7 @@ class TestBodyTree:
                 {
                     "name": "Experience",
                     "nodes": [
-                        {"name": "Northwind", "nodes": ["Led the checkout rewrite"]},
+                        {"name": "Northwind", "nodes": ["- Led the checkout rewrite"]},
                     ],
                 },
                 {"name": "Education", "nodes": ["BSc Computer Science, 2016"]},
@@ -351,14 +351,14 @@ class TestBodyTree:
                     "name": "Skills",
                     "nodes": [
                         "TypeScript, Python, SQL",
-                        {"name": "Platforms", "nodes": ["AWS", "GCP"]},
+                        {"name": "Platforms", "nodes": ["- AWS", "- GCP"]},
                         "Spoken languages: English, Polish",
                     ],
                 },
             ]
 
     def test_nested_list_items_are_sibling_leaves(self):
-        assert parse_markdown(_cv("- parent\n  - child\n"))["nodes"] == ["parent", "child"]
+        assert parse_markdown(_cv("- parent\n  - child\n"))["nodes"] == ["- parent", "  - child"]
 
     def test_inline_markdown_is_preserved(self):
         assert parse_markdown(_cv("A **bold** and `code` line.\n"))["nodes"] == [
@@ -396,7 +396,7 @@ class TestBodyTree:
                     "nodes": [
                         {
                             "name": "Platforms",
-                            "nodes": ["AWS", "```\ncode\n```"],
+                            "nodes": ["- AWS", "```\ncode\n```"],
                         },
                     ],
                 },
@@ -407,7 +407,7 @@ class TestBodyTree:
                 {
                     "name": "Skills",
                     "nodes": [
-                        {"name": "Platforms", "nodes": ["AWS", "---"]},
+                        {"name": "Platforms", "nodes": ["- AWS", "---"]},
                     ],
                 },
             ]
