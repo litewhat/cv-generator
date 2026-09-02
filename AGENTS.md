@@ -37,7 +37,7 @@ One Markdown path:
 
 - `generate_pdf`: `Document.parse` → `formatter.to_html` → `lib.convert.html_to_pdf`. Atomic PDF write (mkdir, mkstemp, `os.replace`).
 - `to_html` walks `document.content.nodes`, calls `lib.convert.markdown_to_html` on leaf strings, and renders `templates/elegant-v1.html.j2`.
-- `parse_markdown` must not import `document`. It returns a dict (`phone` → `phone_number`, `links` → `social_profiles`). `document.py` validates — do not move validation into the parser. Do not edit `document.py` unless asked.
+- `from_markdown` (`parse.py`) must not import `document`. It returns a dict (`phone` → `phone_number`, `links` → `social_profiles`). `document.py` validates — do not move validation into the parser. Do not edit `document.py` unless asked.
 - PDF header fields are `phone_number` / `social_profiles` after parse aliases. The template binds `Content` fields (no `meta`, no `phone`, no `links` dict).
 - `elegant-v1` only (ATS-safe single-column: no CSS grid, flex, or absolute). `default-v1/v2/v3` are gone.
 - Load templates with `importlib.resources` (`cv_generator/templates/...`), not filesystem paths. Markdown extensions stay `fenced_code`, `tables`, `sane_lists`.

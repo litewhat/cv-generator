@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import ClassVar, Literal
 
-from cv_generator.parse_markdown import ParseError, parse_markdown
+from cv_generator.parse import ParseError, from_markdown
 
 type SocialProfileType = Literal["github", "linkedin"]
 type NodeContent = Node | str
@@ -101,7 +101,7 @@ class Document:
             raise ValueError(f"Unsupported source_format: {format!r}")
         return Document(
             source_format=format,
-            content=Content.from_mapping(parse_markdown(text)),
+            content=Content.from_mapping(from_markdown(text)),
         )
 
 

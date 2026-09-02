@@ -11,7 +11,7 @@ from cv_generator.document import (
     SocialProfile,
     ValidationError,
 )
-from cv_generator.parse_markdown import parse_markdown
+from cv_generator.parse import from_markdown
 
 _EXAMPLES = Path(__file__).resolve().parents[2] / "examples" / "cv_generator" / "document"
 
@@ -93,7 +93,7 @@ class TestExceptions:
         assert not isinstance(excinfo.value, ValidationError)
 
     def test_parse_error_is_reexported_from_document(self):
-        from cv_generator.parse_markdown import ParseError as ParserParseError
+        from cv_generator.parse import ParseError as ParserParseError
         assert ParseError is ParserParseError
 
     def test_validate_document_is_gone(self):
@@ -302,11 +302,11 @@ class TestDocumentModel:
         assert document.content is content
 
 class TestDocumentParse:
-    def test_parse_equals_from_mapping_of_parse_markdown(self):
+    def test_parse_equals_from_mapping_of_from_markdown(self):
         document = Document.parse(_MD)
         assert document == Document(
                 source_format="markdown",
-                content=Content.from_mapping(parse_markdown(_MD)),
+                content=Content.from_mapping(from_markdown(_MD)),
             )
         assert document.source_format == "markdown"
         assert document.content.nodes[0].name == "Experience"

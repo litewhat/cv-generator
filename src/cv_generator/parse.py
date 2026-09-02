@@ -6,7 +6,7 @@ class ParseError(Exception):
     """Invalid CV source text."""
 
 
-def parse_markdown(text: str) -> dict[str, object]:
+def from_markdown(text: str) -> dict[str, object]:
     working = text[1:] if text.startswith("\ufeff") else text
     meta, body = _split_frontmatter(working)
     result = _apply_aliases(meta)
