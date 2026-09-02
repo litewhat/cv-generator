@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{ title }}</title>
+  <title>{{ name }} - {{ title }}</title>
   <style>
-    /* elegant-v1 — ATS-safe single-column CV. Variables: title, content, meta. */
+    /* elegant-v1 — ATS-safe single-column CV. Variables: name, title, email, phone_number, location, social_profiles, content. */
     :root {
       --ink: #1f2933;
       --body: #2c333a;
@@ -42,7 +42,7 @@
       hyphens: none;
     }
 
-    /* Header from optional meta (name, title, contacts, links). */
+    /* Header from required Content fields. */
     .cv-header {
       text-align: left;
       border-bottom: 0.75pt solid var(--rule);
@@ -188,32 +188,21 @@
   </style>
 </head>
 <body>
-  {% if meta and (meta.name or meta.title or meta.email or meta.phone or meta.location or meta.links) %}
   <header class="cv-header">
-    {% if meta.name %}<h1>{{ meta.name }}</h1>{% endif %}
-    {% if meta.title %}<p class="cv-title">{{ meta.title }}</p>{% endif %}
-    {% if meta.email or meta.phone or meta.location %}
+    <h1>{{ name }}</h1>
+    <p class="cv-title">{{ title }}</p>
     <p class="cv-contacts">
-      {% for item in [meta.email, meta.phone, meta.location] if item %}
-        {% if not loop.first %}<span class="cv-sep">·</span>{% endif %}
-        {% if loop.first and meta.email and item == meta.email %}
-          <a href="mailto:{{ item }}">{{ item }}</a>
-        {% else %}
-          <span>{{ item }}</span>
-        {% endif %}
-      {% endfor %}
+      <a href="mailto:{{ email }}">{{ email }}</a><span class="cv-sep">·</span><span>{{ phone_number }}</span><span class="cv-sep">·</span><span>{{ location }}</span>
     </p>
-    {% endif %}
-    {% if meta.links %}
+    {% if social_profiles %}
     <p class="cv-links">
-      {% for label, url in meta.links.items() %}
+      {% for profile in social_profiles %}
         {% if not loop.first %}<span class="cv-sep">·</span>{% endif %}
-        <a href="{{ url }}">{{ label }}</a>
+        <a href="{{ profile.url }}">{{ profile.type }}</a>
       {% endfor %}
     </p>
     {% endif %}
   </header>
-  {% endif %}
   <main class="cv-body">
     {{ content }}
   </main>

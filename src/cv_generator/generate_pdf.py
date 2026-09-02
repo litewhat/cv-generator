@@ -2,10 +2,9 @@ import os
 import tempfile
 from pathlib import Path
 
-from cv_generator.frontmatter import parse_frontmatter
-from cv_generator.html_document import html_document
-from cv_generator.html_to_pdf import html_to_pdf
-from cv_generator.markdown_to_html import markdown_to_html
+from cv_generator.document import Document
+from cv_generator.formatter import to_html
+from lib.convert import html_to_pdf
 
 
 class CvGeneratorError(Exception):
@@ -28,10 +27,9 @@ def generate_pdf(input_path: Path, output_path: Path) -> None:
     text = input_path.read_text(encoding="utf-8")
 
     try:
-        meta, body = parse_frontmatter(text)
-        fragment = markdown_to_html(body)
-        document = html_document(fragment, title=input_path.stem, meta=meta)
-        pdf_bytes = html_to_pdf(document, base_url=input_path.parent)
+        document = Document.parse(text, format="markdown")
+        html = to_html(document)
+        pdf_bytes = html_to_pdf(html, base_url=input_path.parent)
     except Exception as exc:
         raise CvGeneratorError(str(exc)) from exc
 

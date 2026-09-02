@@ -10,7 +10,7 @@ Do not duplicate this file into the README. Keep this file short and actionable.
 
 - Python `>=3.14`, pin in `.python-version`
 - uv for interpreter, venv (`.venv`), deps, and lockfile
-- Packaged src layout: `src/cv_generator`, build backend `uv_build`
+- Packaged src layout: `src/cv_generator` and `src/lib`, build backend `uv_build` (`module-name = ["cv_generator", "lib"]`)
 - Runtime: `jinja2`, `markdown`, `pyyaml`, `weasyprint`
 - Dev: `pytest` (installed by `uv sync`)
 
@@ -33,13 +33,15 @@ cairo, pango, gdk-pixbuf, libffi (Homebrew on macOS). When changing PDF output, 
 
 ## Architecture
 
-Two separate Markdown paths — do not merge them unless asked:
+One Markdown path:
 
-- **PDF pipeline** (`generate_pdf`): `frontmatter.parse_frontmatter` → `markdown_to_html` → `html_document` → `html_to_pdf`. `html_document` hardcodes `templates/elegant-v1.html.j2`. Unused: `default-v1/v2/v3`.
-- **Structured model** (`document.py` + `parse_markdown.py`): `Document` / `Content` / `Node` tree. Tests and JSON fixtures in `examples/cv_generator/document/`. Not used by `generate_pdf`. `parse_markdown` must not import `document`.
-- Do not share or unify the two YAML frontmatter parsers. PDF keeps `phone` and `links`. The structured path aliases `phone` → `phone_number` and `links` → `social_profiles`. `parse_markdown` returns a dict; `document.py` validates — do not move validation into the parser.
-- Load templates with `importlib.resources` (`cv_generator/templates/...`), not filesystem paths. Keep `elegant-v1` ATS-safe single-column (no CSS grid, flex, or absolute). Markdown extensions stay `fenced_code`, `tables`, `sane_lists`.
-- Keep `weasyprint` and `yaml` lazy (not imported when loading `cv_generator.cli`).
+- `generate_pdf`: `Document.parse` → `formatter.to_html` → `lib.convert.html_to_pdf`. Atomic PDF write (mkdir, mkstemp, `os.replace`).
+- `to_html` walks `document.content.nodes`, calls `lib.convert.markdown_to_html` on leaf strings, and renders `templates/elegant-v1.html.j2`.
+- `parse_markdown` must not import `document`. It returns a dict (`phone` → `phone_number`, `links` → `social_profiles`). `document.py` validates — do not move validation into the parser. Do not edit `document.py` unless asked.
+- PDF header fields are `phone_number` / `social_profiles` after parse aliases. The template binds `Content` fields (no `meta`, no `phone`, no `links` dict).
+- `elegant-v1` only (ATS-safe single-column: no CSS grid, flex, or absolute). `default-v1/v2/v3` are gone.
+- Load templates with `importlib.resources` (`cv_generator/templates/...`), not filesystem paths. Markdown extensions stay `fenced_code`, `tables`, `sane_lists`.
+- Imports are module-level. Importing `cv_generator.cli` loads `yaml` and `weasyprint`.
 
 ## Git
 
@@ -51,7 +53,7 @@ Two separate Markdown paths — do not merge them unless asked:
 - Scope changes to what was asked. Do not scaffold the full app unprompted.
 - English for code, comments, and docs unless the user writes in another language.
 - Only use `git worktree` when explicitly instructed; never create or use worktrees otherwise.
-- Tests live in `tests/` (one file per module). Run `uv run pytest` after behavior changes.
+- Tests live under `tests/cv_generator/` and `tests/lib/`, one file per production module, grouped in pytest classes. Run `uv run pytest` after behavior changes.
 - Ask before adding a dependency or new tooling (ruff, mypy, formatters, extra Markdown extensions).
 - Do not read or edit `.local/` or `.env`.
 

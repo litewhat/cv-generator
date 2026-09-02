@@ -24,3 +24,6 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.uv.build-backend]
+module-name = ["cv_generator", "lib"]
