@@ -42,14 +42,14 @@
       hyphens: none;
     }
 
-    /* Header from required Content fields. */
-    .cv-header {
+    /* Masthead from required Content fields. */
+    .cv-masthead {
       text-align: left;
       border-bottom: 0.75pt solid var(--rule);
       padding-bottom: 0.85em;
       margin-bottom: 1.25em;
     }
-    .cv-header h1 {
+    .cv-masthead h1 {
       font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
       font-size: 22pt;
       font-weight: 700;
@@ -58,7 +58,7 @@
       margin: 0 0 0.12em;
       line-height: 1.15;
     }
-    .cv-header .cv-title {
+    .cv-masthead__role {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 10pt;
       font-weight: 500;
@@ -67,27 +67,27 @@
       margin: 0;
       line-height: 1.35;
     }
-    .cv-header .cv-contacts,
-    .cv-header .cv-links {
+    .cv-masthead__contact,
+    .cv-masthead__profiles {
       font-size: 9.25pt;
       color: var(--muted);
       margin: 0.4em 0 0;
       line-height: 1.45;
     }
-    .cv-header .cv-sep {
+    .cv-masthead__dot {
       color: var(--rule);
       margin: 0 0.4em;
     }
-    .cv-header a {
+    .cv-masthead a {
       color: var(--accent);
       text-decoration: none;
       border-bottom: 0.4pt solid var(--rule);
     }
 
-    /* Body: Markdown fragment. h1 = section, h2 = company, h3 = project. */
-    .cv-body > h1:first-child { margin-top: 0; }
+    /* Content: Markdown fragment. h1 = section, h2 = company, h3 = project. */
+    .cv-content > h1:first-child { margin-top: 0; }
 
-    .cv-body h1 {
+    .cv-content h1 {
       font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
       font-size: 13pt;
       font-weight: 600;
@@ -100,7 +100,7 @@
       page-break-after: avoid;
     }
 
-    .cv-body h2 {
+    .cv-content h2 {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 11pt;
       font-weight: 600;
@@ -110,7 +110,7 @@
       page-break-after: avoid;
     }
 
-    .cv-body h3 {
+    .cv-content h3 {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 10pt;
       font-weight: 600;
@@ -120,70 +120,70 @@
       page-break-after: avoid;
     }
 
-    .cv-body h2 + p,
-    .cv-body h3 + p,
-    .cv-body h3 + ul { page-break-before: avoid; }
+    .cv-content h2 + p,
+    .cv-content h3 + p,
+    .cv-content h3 + ul { page-break-before: avoid; }
 
-    .cv-body p {
+    .cv-content p {
       margin: 0.35em 0;
       line-height: 1.5;
     }
 
-    .cv-body strong {
+    .cv-content strong {
       font-weight: 600;
       color: var(--ink);
     }
-    .cv-body p strong:first-child { color: var(--accent); }
+    .cv-content p strong:first-child { color: var(--accent); }
 
-    .cv-body ul,
-    .cv-body ol {
+    .cv-content ul,
+    .cv-content ol {
       margin: 0.25em 0 0.65em;
       padding-left: 1.2em;
     }
-    .cv-keep {
+    .cv-content__entry {
       page-break-inside: avoid;
       break-inside: avoid;
     }
 
-    .cv-body li {
+    .cv-content li {
       margin: 0.18em 0;
       line-height: 1.5;
       page-break-inside: avoid;
     }
-    .cv-body li::marker { color: var(--accent); }
+    .cv-content li::marker { color: var(--accent); }
 
-    .cv-body a {
+    .cv-content a {
       color: var(--accent);
       text-decoration: none;
       border-bottom: 0.4pt solid var(--rule);
       word-break: break-word;
     }
 
-    .cv-body hr {
+    .cv-content hr {
       border: none;
       border-top: 0.75pt solid var(--rule);
       margin: 1.1em 0;
     }
 
-    .cv-body table {
+    .cv-content table {
       border-collapse: collapse;
       width: 100%;
       margin: 0.7em 0;
       font-size: 8.7pt;
     }
-    .cv-body th,
-    .cv-body td {
+    .cv-content th,
+    .cv-content td {
       border: 0.6pt solid var(--rule);
       padding: 0.35em 0.55em;
       text-align: left;
       vertical-align: top;
     }
 
-    .cv-body code {
+    .cv-content code {
       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       font-size: 0.88em;
     }
-    .cv-body pre {
+    .cv-content pre {
       background: #f7f8f8;
       border: 0.6pt solid var(--rule);
       padding: 0.7em 0.8em;
@@ -193,22 +193,22 @@
   </style>
 </head>
 <body>
-  <header class="cv-header">
+  <header class="cv-masthead">
     <h1>{{ name }}</h1>
-    <p class="cv-title">{{ title }}</p>
-    <p class="cv-contacts">
-      <a href="mailto:{{ email }}">{{ email }}</a><span class="cv-sep">·</span><span>{{ phone_number }}</span><span class="cv-sep">·</span><span>{{ location }}</span>
+    <p class="cv-masthead__role">{{ title }}</p>
+    <p class="cv-masthead__contact">
+      <a href="mailto:{{ email }}">{{ email }}</a><span class="cv-masthead__dot">·</span><span>{{ phone_number }}</span><span class="cv-masthead__dot">·</span><span>{{ location }}</span>
     </p>
     {% if social_profiles %}
-    <p class="cv-links">
+    <p class="cv-masthead__profiles">
       {% for profile in social_profiles %}
-        {% if not loop.first %}<span class="cv-sep">·</span>{% endif %}
+        {% if not loop.first %}<span class="cv-masthead__dot">·</span>{% endif %}
         <a href="{{ profile.url }}">{{ profile.type }}</a>
       {% endfor %}
     </p>
     {% endif %}
   </header>
-  <main class="cv-body">
+  <main class="cv-content">
     {{ content }}
   </main>
 </body>

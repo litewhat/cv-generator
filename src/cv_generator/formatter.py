@@ -59,5 +59,5 @@ def _render_node(node: Node, depth: int) -> str:
     heading = f"<h{level}>{escape(node.name)}</h{level}>"
     inner = heading + _render_children(node.nodes, depth)
     if depth >= 2:
-        return f'<section class="cv-keep">{inner}</section>'
+        return f'<section class="cv-content__entry">{inner}</section>'
     return inner
