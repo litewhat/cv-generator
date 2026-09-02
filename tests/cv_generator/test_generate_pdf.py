@@ -88,7 +88,9 @@ class TestPdfOutput:
         generate_pdf(source, tmp_path / "cv.pdf")
         assert Path(captured["base_url"]) == tmp_path
 
-    @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
+    @pytest.mark.skipif(
+        shutil.which("pdftotext") is None, reason="pdftotext not installed"
+    )
     def test_pdf_text_is_linear_top_to_bottom(self, tmp_path: Path):
         source = _write_cv(
             tmp_path / "cv.md",
@@ -224,7 +226,9 @@ class TestAtomicWrite:
         generate_pdf(source, output)
         original = output.read_bytes()
 
-        def fail_replace(src: str | os.PathLike[str], dst: str | os.PathLike[str]) -> None:
+        def fail_replace(
+            src: str | os.PathLike[str], dst: str | os.PathLike[str]
+        ) -> None:
             raise OSError("boom")
 
         monkeypatch.setattr("cv_generator.generate_pdf.os.replace", fail_replace)

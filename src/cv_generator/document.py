@@ -2,10 +2,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import ClassVar, Literal
 
-from cv_generator.parser import ParseError, from_markdown
+from cv_generator.parser import ParseError as ParseError
+from cv_generator.parser import from_markdown
 
 type SocialProfileType = Literal["github", "linkedin"]
 type NodeContent = Node | str
+
 
 class ValidationError(Exception):
     """Parsed mapping does not match the content schema."""
@@ -60,7 +62,13 @@ class Node:
 
 @dataclass(frozen=True, slots=True)
 class Content:
-    HEADER_FIELDS: ClassVar[tuple[str, ...]] = ("name", "title", "email", "phone_number", "location")
+    HEADER_FIELDS: ClassVar[tuple[str, ...]] = (
+        "name",
+        "title",
+        "email",
+        "phone_number",
+        "location",
+    )
 
     name: str
     title: str
@@ -99,9 +107,11 @@ class Document:
     ) -> Document:
         if format != "markdown":
             raise ValueError(f"Unsupported source_format: {format!r}")
+        data = from_markdown(text)
+        content = Content.from_mapping(data)
         return Document(
             source_format=format,
-            content=Content.from_mapping(from_markdown(text)),
+            content=content,
         )
 
 

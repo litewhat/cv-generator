@@ -4,6 +4,7 @@ from pathlib import Path
 
 from cv_generator.generate_pdf import CvGeneratorError, generate_pdf
 
+
 def create_parser():
     parser = argparse.ArgumentParser(prog="cv-generator")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -26,7 +27,7 @@ def create_parser():
         help="PDF file to write",
     )
     return parser
-    
+
 
 def execute(argv: list[str]) -> int:
     parser = create_parser()

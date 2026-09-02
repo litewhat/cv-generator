@@ -12,7 +12,7 @@ Do not duplicate this file into the README. Keep this file short and actionable.
 - uv for interpreter, venv (`.venv`), deps, and lockfile
 - Packaged src layout: `src/cv_generator` and `src/lib`, build backend `uv_build` (`module-name = ["cv_generator", "lib"]`)
 - Runtime: `jinja2`, `markdown`, `pyyaml`, `weasyprint`
-- Dev: `pytest` (installed by `uv sync`)
+- Dev: `pytest`, `ruff` (installed by `uv sync`)
 
 ## Commands
 
@@ -21,6 +21,10 @@ uv sync
 uv run python
 uv run cv-generator generate-pdf -i cv.md -o cv.pdf
 uv run pytest
+uv run ruff check src tests
+uv run ruff check --fix src tests
+uv run ruff format src tests
+uv run ruff format --check src tests
 uv add <package>
 uv remove <package>
 ```

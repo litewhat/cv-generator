@@ -2,6 +2,7 @@ import re
 
 import yaml
 
+
 class ParseError(Exception):
     """Invalid CV source text."""
 

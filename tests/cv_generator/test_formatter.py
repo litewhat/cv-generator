@@ -120,7 +120,10 @@ class TestHeader:
         header = html.split("<main")[0]
         assert "<h1>A &lt; B</h1>" in header
         assert "<h1>A < B</h1>" not in header
-        assert "https://example.com/&#34;&gt;xss" in header or "https://example.com/&quot;&gt;xss" in header
+        assert (
+            "https://example.com/&#34;&gt;xss" in header
+            or "https://example.com/&quot;&gt;xss" in header
+        )
         assert 'href="https://example.com/">xss"' not in header
 
 
@@ -132,11 +135,7 @@ class TestBodyHeadings:
 
     def test_nested_headings_follow_tree_depth(self):
         html = _body(
-            to_html(
-                _parse(
-                    "## Experience\n\n### Northwind\n\n#### Checkout\n"
-                )
-            )
+            to_html(_parse("## Experience\n\n### Northwind\n\n#### Checkout\n"))
         )
         assert "<h1>Experience</h1>" in html
         assert "<h2>Northwind</h2>" in html
@@ -185,17 +184,19 @@ class TestKeepTogether:
         assert html.index("<h1>Experience</h1>") < html.index(
             '<section class="cv-content__entry">'
         )
-        assert (
-            '<section class="cv-content__entry"><h2>Northwind</h2>'
-            in html.replace("\n", "")
+        assert '<section class="cv-content__entry"><h2>Northwind</h2>' in html.replace(
+            "\n", ""
         )
-        assert (
-            '<section class="cv-content__entry"><h3>Checkout</h3>'
-            in html.replace("\n", "")
+        assert '<section class="cv-content__entry"><h3>Checkout</h3>' in html.replace(
+            "\n", ""
         )
         compact = html.replace("\n", "")
-        northwind_open = compact.index('<section class="cv-content__entry"><h2>Northwind</h2>')
-        checkout_open = compact.index('<section class="cv-content__entry"><h3>Checkout</h3>')
+        northwind_open = compact.index(
+            '<section class="cv-content__entry"><h2>Northwind</h2>'
+        )
+        checkout_open = compact.index(
+            '<section class="cv-content__entry"><h3>Checkout</h3>'
+        )
         assert northwind_open < checkout_open
         inner_close = compact.index("</section>", checkout_open)
         outer_close = compact.index("</section>", inner_close + len("</section>"))
@@ -330,13 +331,7 @@ class TestBodyBlocks:
         assert "<li>" not in html
 
     def test_fence_is_sibling_block_not_li(self):
-        html = _body(
-            to_html(
-                _parse(
-                    f"## Code\n\n{_FENCE}python\nx = 1\n{_FENCE}\n"
-                )
-            )
-        )
+        html = _body(to_html(_parse(f"## Code\n\n{_FENCE}python\nx = 1\n{_FENCE}\n")))
         assert "<h1>Code</h1>" in html
         assert "<pre>" in html
         assert "x = 1" in html
