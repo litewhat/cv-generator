@@ -47,6 +47,7 @@ Requires dev dependencies (installed by default with `uv sync`):
 ```bash
 uv sync
 uv run pytest
+uv run ty check
 uv run pytest -v               # verbose
 uv run pytest tests/test_cli.py -v  # single file
 ```

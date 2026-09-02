@@ -24,6 +24,7 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.5",
+    "ty>=0.0.77",
 ]
 
 [tool.ruff]
@@ -37,6 +38,9 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.ty.src]
+include = ["src", "tests"]
 
 [tool.uv.build-backend]
 module-name = ["cv_generator", "lib"]
