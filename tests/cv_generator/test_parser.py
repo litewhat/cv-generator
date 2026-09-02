@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from cv_generator.parse import ParseError, from_markdown
+from cv_generator.parser import ParseError, from_markdown
 
 _HEADER = """---
 name: Ada Lovelace
@@ -26,7 +26,7 @@ def _cv(body: str) -> str:
 
 class TestParserIsolation:
     def test_from_markdown_does_not_import_document(self):
-        source = Path(__file__).resolve().parents[2] / "src" / "cv_generator" / "parse.py"
+        source = Path(__file__).resolve().parents[2] / "src" / "cv_generator" / "parser.py"
         text = source.read_text(encoding="utf-8")
         assert "cv_generator.document" not in text
         assert "from cv_generator import document" not in text

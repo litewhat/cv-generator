@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import ClassVar, Literal
 
-from cv_generator.parse import ParseError, from_markdown
+from cv_generator.parser import ParseError, from_markdown
 
 type SocialProfileType = Literal["github", "linkedin"]
 type NodeContent = Node | str
