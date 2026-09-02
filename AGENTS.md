@@ -54,3 +54,13 @@ Two separate Markdown paths — do not merge them unless asked:
 - Tests live in `tests/` (one file per module). Run `uv run pytest` after behavior changes.
 - Ask before adding a dependency or new tooling (ruff, mypy, formatters, extra Markdown extensions).
 - Do not read or edit `.local/` or `.env`.
+
+## Code search & token conservation rules
+
+- Do NOT load whole files into context without locating the target line numbers first.
+- ALWAYS use ripgrep (rg) to search for function names, classes, variables, and string literals.
+  - Example: rg -n "get_user_data" src/
+- USE ast-grep (sg) when searching for specific code structures across varying formatting, indentation, or signatures.
+  - Example (Async functions): ast-grep run --pattern 'async def $NAME($ARGS): $$$' --lang python src/
+  - Example (Decorators): ast-grep run --pattern '@$DECORATOR\ndef $NAME($ARGS): $$$' --lang python src/
+- Fetch ONLY minimal context blocks around matching results (use ripgrep's -C flag or inspect strictly defined line ranges).
