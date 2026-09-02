@@ -7,11 +7,10 @@ from cv_generator.document import (
     Content,
     Document,
     Node,
-    ParseError,
     SocialProfile,
     ValidationError,
 )
-from cv_generator.parser import from_markdown
+from cv_generator.parser import ParseError, from_markdown
 
 _EXAMPLES = (
     Path(__file__).resolve().parents[2] / "examples" / "cv_generator" / "document"
