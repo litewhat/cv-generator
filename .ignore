@@ -4,4 +4,4 @@
 # Local-only
 .local/
 
-.env/
+.env
