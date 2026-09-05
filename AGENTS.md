@@ -64,10 +64,12 @@ One Markdown path:
 
 ## Code search & token conservation rules
 
-- Do NOT load whole files into context without locating the target line numbers first.
-- ALWAYS use ripgrep (rg) to search for function names, classes, variables, and string literals.
-  - Example: rg -n "get_user_data" src/
-- USE ast-grep (sg) when searching for specific code structures across varying formatting, indentation, or signatures.
-  - Example (Async functions): ast-grep run --pattern 'async def $NAME($ARGS): $$$' --lang python src/
-  - Example (Decorators): ast-grep run --pattern '@$DECORATOR\ndef $NAME($ARGS): $$$' --lang python src/
-- Fetch ONLY minimal context blocks around matching results (use ripgrep's -C flag or inspect strictly defined line ranges).
+Minimize irrelevant output while gathering enough context to make correct changes.
+
+1. **Locate files first.** Use `rg --files -g '<pattern>'` in the narrowest relevant directory; expand if needed. Respect repository access restrictions and ignore rules.
+2. **Search before reading.** Use `rg -n -F '<text>' <path>` for literal names or strings. Use regex only when needed, combine related patterns with `-e`, and use `rg -l` when only filenames are needed.
+3. **Match structure with the right tool.** Use `ast-grep` for syntax patterns that vary in formatting or span multiple lines, e.g. `ast-grep run --pattern 'async def $NAME($ARGS): $$$' --lang python src/`. If unavailable, use targeted `rg` searches; do not install tooling without authorization.
+4. **Read focused context.** Start with `rg -n -C 5` around matches or a specific line range. Expand to relevant functions, classes, imports, callers, and tests as needed. Read a whole file only after locating relevant lines and determining that broader context is necessary.
+5. **Refine noisy searches.** If results are excessive or truncated, narrow the path, file glob, or pattern and rerun. Do not treat truncated output as complete or a failed search as proof that code is absent.
+6. **Reuse findings.** Track relevant paths and symbols. Batch independent searches and avoid repeating unchanged reads unless new evidence requires it.
+7. **Verify changes.** Check affected references and behavior, inspect the diff, and run repository-required checks. Token savings must not replace necessary validation.
